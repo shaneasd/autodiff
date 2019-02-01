@@ -22,14 +22,14 @@ namespace boost { namespace math { namespace differentiation { inline namespace 
 namespace detail {
 
 template<typename RealType, size_t Order>
-fvar<RealType,Order>::fvar(const root_type& ca, bool is_variable)
+fvar<RealType,Order>::fvar(const root_type& ca, const bool is_variable)
 {
     fvar_cpp11(std::integral_constant<bool,is_fvar<RealType>::value>{}, ca, is_variable);
 }
 
 template<typename RealType, size_t Order>
 template<typename RootType>
-void fvar<RealType,Order>::fvar_cpp11(std::true_type, const RootType& ca, bool is_variable)
+void fvar<RealType,Order>::fvar_cpp11(std::true_type, const RootType& ca, const bool is_variable)
 {
     v.front() = RealType(ca, is_variable);
     if (0 < Order)
@@ -38,7 +38,7 @@ void fvar<RealType,Order>::fvar_cpp11(std::true_type, const RootType& ca, bool i
 
 template<typename RealType, size_t Order>
 template<typename RootType>
-void fvar<RealType,Order>::fvar_cpp11(std::false_type, const RootType& ca, bool is_variable)
+void fvar<RealType,Order>::fvar_cpp11(std::false_type, const RootType& ca, const bool is_variable)
 {
     v.front() = ca;
     if (0 < Order)

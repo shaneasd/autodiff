@@ -86,7 +86,7 @@ class fvar
     fvar() = default;
 
     // Initialize a variable or constant.
-    fvar(const root_type&, bool is_variable);
+    fvar(const root_type&, const bool is_variable);
 
     // RealType(cr) | RealType | RealType is copy constructible.
     fvar(const fvar&) = default;
@@ -307,10 +307,10 @@ private:
 // C++11 Compatibility
 #ifdef BOOST_NO_CXX17_IF_CONSTEXPR
     template<typename RootType>
-    void fvar_cpp11(std::true_type, const RootType& ca, bool is_variable);
+    void fvar_cpp11(std::true_type, const RootType& ca, const bool is_variable);
 
     template<typename RootType>
-    void fvar_cpp11(std::false_type, const RootType& ca, bool is_variable);
+    void fvar_cpp11(std::false_type, const RootType& ca, const bool is_variable);
 
     template<typename... Orders>
     get_type_at<RealType, sizeof...(Orders)> at_cpp11(std::true_type, size_t order, Orders... orders) const;
@@ -488,7 +488,7 @@ namespace detail {
 
 #ifndef BOOST_NO_CXX17_IF_CONSTEXPR
 template<typename RealType, size_t Order>
-fvar<RealType,Order>::fvar(const root_type& ca, bool is_variable)
+fvar<RealType,Order>::fvar(const root_type& ca, const bool is_variable)
 {
     if constexpr (is_fvar<RealType>::value)
     {
@@ -511,12 +511,8 @@ template<typename RealType, size_t Order>
 template<typename RealType2, size_t Order2>
 fvar<RealType,Order>::fvar(const fvar<RealType2,Order2>& cr)
 {
-    if BOOST_AUTODIFF_IF_CONSTEXPR (is_fvar<RealType2>::value)
-        for (size_t i=0 ; i<=std::min(Order,Order2) ; ++i)
-            v[i] = static_cast<RealType>(cr.v[i]);
-    else
-        for (size_t i=0 ; i<=std::min(Order,Order2) ; ++i)
-            v[i] = cr.v[i];
+    for (size_t i=0 ; i<=std::min(Order,Order2) ; ++i)
+        v[i] = static_cast<RealType>(cr.v[i]);
     if BOOST_AUTODIFF_IF_CONSTEXPR (Order2 < Order)
         std::fill(v.begin()+(Order2+1), v.end(), static_cast<RealType>(0));
 }
@@ -1175,7 +1171,7 @@ fvar<RealType,Order> sqrt(const fvar<RealType,Order>& cr)
         return fvar<RealType,Order>(derivatives.front());
     else
     {
-        double numerator = 0.5;
+        root_type numerator = 0.5;
         root_type powers = 1;
         derivatives[1] = numerator / derivatives.front();
         for (size_t i=2 ; i<=order ; ++i)

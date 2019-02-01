@@ -9,21 +9,21 @@
 
 namespace boost { namespace math { namespace differentiation {
 
-// Use to determine combined autodiff type.
+// Type of combined autodiff types.
 template<typename RealType, typename... RealTypes>
 using promote = typename detail::promote_args_n<RealType,RealTypes...>::type;
 
-// Single-parameter constructor initializes a constant.
+// Type for variables and constants.
 template<typename RealType, size_t Order, size_t... Orders>
 using autodiff_fvar = typename detail::nest_fvar<RealType,Order,Orders...>::type;
 
-// Returns a variable of differentiation.
+// Function returning a variable of differentiation.
 template<typename RealType, size_t Order, size_t... Orders>
 autodiff_fvar<RealType,Order,Orders...> make_fvar(const RealType& ca);
 
 namespace detail {
 
-// Each nested level corresponds to an independent variable.
+// Single autodiff variable. Independent variables are created by nesting.
 template<typename RealType, size_t Order>
 class fvar
 {
@@ -33,7 +33,7 @@ class fvar
     template<typename... Orders>
     get_type_at<RealType, sizeof...(Orders)-1> derivative(Orders... orders) const;
 
-    // All of the arithmetic operators are overloaded.
+    // All of the arithmetic and comparison operators are overloaded.
     template<typename RealType2, size_t Order2>
     fvar& operator+=(const fvar<RealType2,Order2>&);
 
