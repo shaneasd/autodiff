@@ -11,6 +11,8 @@
 \usepackage{textcomp} % \textonehalf
 \usepackage{wrapfig}
 
+\hypersetup{colorlinks=false}
+
 \begin{document}
 
 \title{Autodiff \\ Automatic Differentiation C++ Library}
@@ -91,7 +93,8 @@ f(x_0+\varepsilon) &= f(x_0) + f'(x_0)\varepsilon + \frac{f''(x_0)}{2!}\varepsil
 \end{align*}
 The essential idea of autodiff is the replacement of numbers with polynomials in the evaluation of $f$. By inputting
 the first-order polynomial $x_0+\varepsilon$, the resulting polynomial in $\varepsilon$ contains the function's
-derivatives within the coefficients. Multiplying by a factorial term yields the numeric value of the derivative.
+derivatives within the coefficients. Each coefficient is equal to a different derivative order, divided by the
+factorial of the order.
 
 Assume one is interested in the first $N$ derivatives of $f$ at $x_0$. Then without any loss of precision to the
 calculation of the derivatives, all terms $O\left(\varepsilon^{N+1}\right)$ that include powers of $\varepsilon$
@@ -99,11 +102,15 @@ greater than $N$ can be discarded, and under these truncation rules, $f$ provide
 transformation:
 
 \[
-f\quad:\quad x_0+\varepsilon\quad\mapsto\quad\sum_{n=0}^N\frac{f^{(n)}(x_0)}{n!}\varepsilon^n.
+f \qquad : \qquad x_0+\varepsilon \qquad \mapsto \qquad
+    \sum_{n=0}^Ny_n\varepsilon^n=\sum_{n=0}^N\frac{f^{(n)}(x_0)}{n!}\varepsilon^n.
 \]
 C++'s ability to overload operators and functions allows for the creation of a class {\tt fvar} that represents
-polynomials in $\varepsilon$. Thus the same algorithm that calculates the numeric value of $f(x_0)$ is also used to
-calculate the polynomial $f(x_0+\varepsilon)$. The derivatives are then found in the coefficients of the return value.
+polynomials in $\varepsilon$. Thus the same algorithm that calculates the numeric value of $y_0=f(x_0)$ is also
+used to calculate the polynomial $\sum_{n=0}^Ny_n\varepsilon^n=f(x_0+\varepsilon)$. The derivatives are then found
+in the coefficients of the return value, multiplied by a factorial:
+
+\[ f^{(n)}(x_0)=n!y_n. \]
 
 \section{Examples}
 
@@ -114,8 +121,8 @@ calculate the polynomial $f(x_0+\varepsilon)$. The derivatives are then found in
 In this example, {\tt autodiff\_fvar<double,5>} is a data type that can hold a polynomial of up to degree 5, and
 the {\tt make\_fvar<double,5> x(2.0)} represents the polynomial $2+\varepsilon$.  Internally, this is modeled by
 a {\tt std::array<double,6>} whose elements {\tt \{2, 1, 0, 0, 0, 0\}} correspond to the 6 coefficients of the
-polynomial upon initialization. Its fourth power is a polynomial with coefficients {\tt v = \{16, 32, 24, 8, 1,
-0\}}. The derivatives are obtained using the formula $f^{(n)}(2)=n!*{\tt v[n]}$.
+polynomial upon initialization. Its fourth power is a polynomial with coefficients {\tt y = \{16, 32, 24, 8, 1, 0\}}.
+The derivatives are obtained using the formula $f^{(n)}(2)=n!*{\tt y[n]}$.
 
 \begin{verbatim}
 #include <boost/math/differentiation/autodiff.hpp>
