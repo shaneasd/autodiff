@@ -75,8 +75,7 @@ f(x_0+\varepsilon) &= f(x_0) + f'(x_0)\varepsilon + \frac{f''(x_0)}{2!}\varepsil
 
 The essential idea of autodiff is the replacement of numbers with polynomials in the evaluation of /f/. By inputting
 the first-order polynomial ['x[sub 0]+\u03b5], the resulting polynomial in ['\u03b5] contains the function's
-derivatives within the coefficients. One then multiplies by a factorial term to obtain the desired derivative of
-any order.
+derivatives within the coefficients. Multiplying by a factorial term yields the numeric value of the derivative.
 
 Assume one is interested in the first /N/ derivatives of /f/ at ['x[sub 0]]. Then without any loss of precision
 to the calculation of the derivatives, all terms ['O(\u03b5[super N+1])] that include powers of ['\u03b5] greater
@@ -85,8 +84,8 @@ than /N/ can be discarded, and under these truncation rules, /f/ provides a poly
 [/ \Large$$f\quad:\quad x_0+\varepsilon\quad\mapsto\quad\sum_{n=0}^N\frac{f^{(n)}(x_0)}{n!}\varepsilon^n.$$ ]
 [:[:[autodiff_equation polynomial_transform.svg]]]
 
-C++'s ability to overload operators and functions allows for the creation of a class `fvar` that represents
-polynomials in ['\u03b5]. Thus the same logic that calculates the numeric value of ['f(x[sub 0])] also calculates
+C++'s ability to overload operators and functions allows for the creation of a class `fvar` that represents polynomials
+in ['\u03b5]. Thus the same algorithm that calculates the numeric value of ['f(x[sub 0])] is also used to calculate
 the polynomial ['f(x[sub 0]+\u03b5)]. The derivatives are then found in the coefficients of the return value.
 
 
@@ -98,8 +97,9 @@ the polynomial ['f(x[sub 0]+\u03b5)]. The derivatives are then found in the coef
 
 In this example, `autodiff_fvar<double,5>` is a data type that can hold a polynomial of up to degree 5,
 and `make_fvar<double,5>(2.0)` represents the polynomial 2+['\u03b5]. Internally, this is modeled by a
-`std::array<double,6>` whose elements correspond to the 6 coefficients of the polynomial: `{2, 1, 0, 0, 0, 0}`
-upon initialization.
+`std::array<double,6>` whose elements `{2, 1, 0, 0, 0, 0}` correspond to the 6 coefficients of the polynomial upon
+initialization.  Its fourth power is a polynomial with coefficients `v = {16, 32, 24, 8, 1, 0}`.  The derivatives
+are obtained using the formula ['f[super (n)](2)=n!*v[n]].
 
     #include <boost/math/differentiation/autodiff.hpp>
     #include <iostream>
@@ -122,6 +122,14 @@ upon initialization.
             std::cout << "y.derivative("<<i<<") = " << y.derivative(i) << std::endl;
         return 0;
     }
+    /* Output:
+    y.derivative(0) = 16
+    y.derivative(1) = 32
+    y.derivative(2) = 48
+    y.derivative(3) = 48
+    y.derivative(4) = 24
+    y.derivative(5) = 0
+    */
 
 The above calculates 
 
@@ -143,17 +151,17 @@ Example 2: Multi-variable mixed partial derivatives with multi-precision data ty
 [h3 Calculate [autodiff_equation mixed12.svg] with a precision of about 100 decimal digits,
 where [autodiff_equation example2f.svg].]
 
-In this example, the data type `autodiff_fvar<cpp_dec_float_100,Nw,Nx,Ny,Nz>` represents a polynomial in 4
-independent variables, where the highest powers of each are `Nw`, `Nx`, `Ny` and `Nz`. The underlying arithmetic
-data type, aliased as `root_type`, is `boost::multiprecision::cpp_dec_float_100`. The internal data type is
-`std::array<std::array<std::array<std::array<cpp_dec_float_100,Nz+1>,Ny+1>,Nx+1>,Nw+1>`.  The `root_type` is
-always the first template parameter to `autodiff_fvar<...>` followed by the maximum derivative orders that are to
-be calculated for each independent variable.
+In this example, the data type `autodiff_fvar<cpp_dec_float_100,Nw,Nx,Ny,Nz>` represents a multivariate polynomial
+in 4 independent variables, where the highest powers of each are `Nw`, `Nx`, `Ny` and `Nz`. The underlying
+arithmetic data type, aliased as `root_type`, is `boost::multiprecision::cpp_dec_float_100`. The internal data
+type is `std::array<std::array<std::array<std::array<cpp_dec_float_100,Nz+1>,Ny+1>,Nx+1>,Nw+1>`.  The `root_type`
+is always the first template parameter to `autodiff_fvar<...>` followed by the maximum derivative orders that are
+to be calculated for each independent variable.
 
 When variables are initialized by `make_fvar<...>()`, the position of the last derivative order given in the
-parameter pack determines which variable is taken to be independent. In other words, it determines which of the 4
-different polynomial variables ['\u03b5[sub w]], ['\u03b5[sub x]], ['\u03b5[sub y]], or ['\u03b5[sub z]]  are to
-be added to the input value:
+template parameter pack determines which variable is taken to be independent. In other words, it determines which
+of the 4 different polynomial variables ['\u03b5[sub w]], ['\u03b5[sub x]], ['\u03b5[sub y]], or ['\u03b5[sub z]]
+are to be added to the constant term:
 
 [/ \Large\begin{align*}
 \texttt{make\_fvar<cpp\_dec\_float\_100,Nw>(11)} &= 11+\varepsilon_w \\
