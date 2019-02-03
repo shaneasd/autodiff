@@ -32,6 +32,8 @@
 
 \section{Synopsis}
 
+\begingroup
+\fontsize{10pt}{10pt}\selectfont
 \begin{verbatim}
 #include <boost/math/differentiation/autodiff.hpp>
 
@@ -83,6 +85,7 @@ fvar<RealType,Order> exp(const fvar<RealType,Order>&);
 
 } } } // namespace boost::math::differentiation
 \end{verbatim}
+\endgroup
 
 \section{Description}
 
@@ -554,13 +557,13 @@ This will be clarified next.
 In general, there are two rules to keep in mind when dealing with multiple variables:
 
 \begin{enumerate}
-\item Independent variables correspond to parameter position, in both the declaration \\
-   {\tt boost::math::differentiation::autodiff\_fvar<T,...>} and calls to {\tt derivative(...)}.
-\item The last template position in a value-initialized instance determines which variable a derivative will be
+\item Independent variables correspond to parameter position, in both the initialization {\tt make\_fvar<T,...>}
+    and calls to {\tt derivative(...)}.
+\item The last template position in {\tt make\_fvar<T,...>} determines which variable a derivative will be
    taken with respect to.
 \end{enumerate}
-Both rules are illustrated with an example in which there are 3 independent variables f$x,y,zf$ and 1 dependent
-variable f$w=f(x,y,z)f$, though the following code readily generalizes to any number of independent variables, limited
+Both rules are illustrated with an example in which there are 3 independent variables $x,y,z$ and 1 dependent
+variable $w=f(x,y,z)$, though the following code readily generalizes to any number of independent variables, limited
 only by the C++ compiler/memory/platform. The maximum derivative order of each variable is {\tt Nx}, {\tt Ny}, and
 {\tt Nz}, respectively. Then the type for {\tt w} is {\tt boost::math::differentiation::autodiff\_fvar<T,Nx,Ny,Nz>}
 and all possible mixed partial derivatives are available via
@@ -629,21 +632,37 @@ multiplications and additions may occur if {\tt z} is declared as {\tt autodiff\
 represent 0 values. Once {\tt z} is combined with {\tt x} and {\tt y} during the computation, the types will be
 promoted as necessary.  This is the recommended way to initialize variables in autodiff.
 
-\section{Function Requirements}
+\section{Function Guidelines}
 
-TODO
-
-When writing a template function, the return value must be locally analytic in the variables of differentiation.
+In order to write a function that accurately calculates derivatives for use with autodiff, there are a couple
+of guidelines that will help in getting accurate derivatives:
 
 \begin{itemize}
-\item Any place where a constant is returned will have 0 derivatives. For example, if an implemention of the
-{\tt fourth\_power()} function given above has as its first statement {\tt if (x == 2) return 16; }
-then no derivatives will be available for $x=2$; instead {\tt y.derivative(i) == 0} for all {\tt i>0}. Each
-value within a connected subset of real numbers must be calculated in terms of an analytic function. The extent
-to which it is not shall be mirrored in the innaccuracy of the derivatives.
+\item Operate on open intervals of real numbers as a whole, rather than individual points.  Avoid
+returning values based on individual point values in the domain.  For example, if an implementation of the
+{\tt fourth\_power()} function above has as its first statement {\tt if (x == 2) return 16; } then no
+derivatives will be available for $x=2$; instead {\tt y.derivative(i) == 0} for all {\tt i>0}. Each value within a
+connected subset of real numbers must be calculated in terms of an analytic function. The extent to which it is not
+will be reflected in the inaccuracy of the derivatives.
 \item Avoid intermediate singularities in both the calculated value and its derivatives. For example, $y=\sqrt{x}$
-followed by $z=y^2$ may appear to be safe for $x\ge0$ however when $x=0$ all non-zero derivatives of $z$ will be
-NaN. This is due to the infinite slope of $y=\sqrt{x}$ at $x=0$.
+followed by $z=y^2$ may appear to be safe for $x\ge0$ however when $x=0$ then all non-zero derivatives of $z$ will
+be NaN. This is due to the infinite derivative of $y=\sqrt{x}$ at $x=0$.
+\item When constructing a piece-wise analytic function, take the average value of each side of the domain for points
+on the boundary between analytic functions. For example, the function $g(x) = \max(0,x)$ should be
+defined in this manner:
+    \begin{verbatim}
+        template<typename T>
+        T g(const T& x)
+        {
+            if (x < 0)
+                return static_cast<T>(0);
+            else if (0 < x)
+                return x;
+            else
+                return 0.5*x;
+        }
+    \end{verbatim}
+This give sensible values for both $g(0)=0$ and $g'(0)=\frac{1}{2}$.
 \end{itemize}
 
 \section{Acknowledgments}

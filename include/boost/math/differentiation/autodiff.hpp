@@ -1091,8 +1091,7 @@ template<typename RealType, size_t Order>
 fvar<RealType,Order> fabs(const fvar<RealType,Order>& cr)
 {
     const typename fvar<RealType,Order>::root_type zero(0);
-    return zero < cr ? cr
-        : cr < zero ? -cr
+    return cr < zero ? -cr
         : cr == zero ? fvar<RealType,Order>() // Canonical fabs'(0) = 0.
         : cr; // Propagate NaN.
 }
