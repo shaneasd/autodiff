@@ -1,7 +1,13 @@
+%           Copyright Matthew Pulver 2018 - 2019.
+% Distributed under the Boost Software License, Version 1.0.
+%     (See accompanying file LICENSE_1_0.txt or copy at
+%           https://www.boost.org/LICENSE_1_0.txt)
+
 \documentclass{article}
 \usepackage{amsmath} %\usepackage{mathtools}
 \usepackage{amssymb} %\mathbb
 \usepackage{color} %\input{variance_triangle.pdf_t}
+\usepackage{fancyhdr}
 \usepackage[margin=0.75in]{geometry}
 \usepackage{graphicx}
 \usepackage{hyperref}
@@ -19,10 +25,20 @@
   pdfborderstyle={/S/U/W 1}% border style will be underline of width 1pt
 }
 
+\pagestyle{fancyplain}
+\fancyhf{} % remove everything
+\renewcommand{\headrulewidth}{0pt} % remove lines as well
+\cfoot[]{\thepage\\
+\scriptsize\color{gray} Copyright \textcopyright\/ Matthew Pulver 2018 - 2019.
+Distributed under the Boost Software License, Version 1.0.\\
+(See accompanying file LICENSE\_1\_0.txt or copy at
+\url{https://www.boost.org/LICENSE\_1\_0.txt})}
+
 \begin{document}
 
-\title{Autodiff \\ Automatic Differentiation C++ Library}
-\author{Matt Pulver}
+\title{Autodiff\\
+\large Automatic Differentiation C++ Library}
+\author{Matthew Pulver}
 \maketitle
 
 %\date{}
@@ -39,10 +55,6 @@
 
 namespace boost { namespace math { namespace differentiation {
 
-// Type of combined autodiff types.
-template<typename RealType, typename... RealTypes>
-using promote = typename detail::promote_args_n<RealType,RealTypes...>::type;
-
 // Type for variables and constants.
 template<typename RealType, size_t Order, size_t... Orders>
 using autodiff_fvar = typename detail::nest_fvar<RealType,Order,Orders...>::type;
@@ -50,6 +62,10 @@ using autodiff_fvar = typename detail::nest_fvar<RealType,Order,Orders...>::type
 // Function returning a variable of differentiation.
 template<typename RealType, size_t Order, size_t... Orders>
 autodiff_fvar<RealType,Order,Orders...> make_fvar(const RealType& ca);
+
+// Type of combined autodiff types.
+template<typename RealType, typename... RealTypes>
+using promote = typename detail::promote_args_n<RealType,RealTypes...>::type;
 
 namespace detail {
 
@@ -102,8 +118,8 @@ f(x_0+\varepsilon) &= f(x_0) + f'(x_0)\varepsilon + \frac{f''(x_0)}{2!}\varepsil
 \end{align*}
 The essential idea of autodiff is the replacement of numbers with polynomials in the evaluation of $f$. By inputting
 the first-order polynomial $x_0+\varepsilon$, the resulting polynomial in $\varepsilon$ contains the function's
-derivatives within the coefficients. Each coefficient is equal to a different derivative order, divided by the
-factorial of the order.
+derivatives within the coefficients. Each coefficient is equal to a derivative of its respective order, divided
+by the factorial of the order.
 
 Assume one is interested in the first $N$ derivatives of $f$ at $x_0$. Then without any loss of precision to the
 calculation of the derivatives, all terms $O\left(\varepsilon^{N+1}\right)$ that include powers of $\varepsilon$
@@ -486,7 +502,6 @@ $f : \mathbb{R}\rightarrow\mathbb{R}$, the function can be represented as a temp
     template<typename T>
     T f(T x);
 \end{verbatim}
-
 Using a generic type {\tt T} allows for {\tt x} to be of a regular type such as {\tt double}, but also allows for\\
 {\tt boost::math::differentiation::autodiff\_fvar<>} types.
 
@@ -504,10 +519,10 @@ Calling $f$ and retrieving the calculated value and derivatives:
     for (int n=0 ; n<=M ; ++n)
         std::cout << "y.derivative("<<n<<") == " << y.derivative(n) << std::endl;
 \end{verbatim}
-
 {\tt y.derivative(0)} returns the undifferentiated value $f(x_0)$, and {\tt y.derivative(n)} returns $f^{(n)}(x_0)$.
 Casting {\tt y} to type {\tt T} also gives the undifferentiated value. In other words, the following 3 values
 are equal:
+
 \begin{enumerate}
 \item {\tt f(x0)}
 \item {\tt y.derivative(0)}
@@ -647,7 +662,7 @@ will be reflected in the inaccuracy of the derivatives.
 \item Avoid intermediate singularities in both the calculated value and its derivatives. For example, $y=\sqrt{x}$
 followed by $z=y^2$ may appear to be safe for $x\ge0$ however when $x=0$ then all non-zero derivatives of $z$ will
 be NaN. This is due to the infinite derivative of $y=\sqrt{x}$ at $x=0$.
-\item When constructing a piece-wise analytic function, take the average value of each side of the domain for points
+\item When constructing a piecewise analytic function, take the average value of each side of the domain for points
 on the boundary between analytic functions. For example, the function $g(x) = \max(0,x)$ should be
 defined in this manner:
     \begin{verbatim}
@@ -672,11 +687,6 @@ This give sensible values for both $g(0)=0$ and $g'(0)=\frac{1}{2}$.
 \item Nick Thompson --- Initial feedback and help with Boost integration.
 \item John Maddock --- Initial feedback and help with Boost integration.
 \end{itemize}
-
-%        Copyright &copy; Matthew Pulver 2018 - 2019.<br/>
-% Distributed under the Boost Software License, Version 1.0.<br/>
-%     (See accompanying file LICENSE_1_0.txt or copy at<br/>
-%           https://www.boost.org/LICENSE_1_0.txt)
 
 \begin{thebibliography}{1}
 \bibitem{ad} https://en.wikipedia.org/wiki/Automatic\_differentiation

@@ -9,10 +9,6 @@
 
 namespace boost { namespace math { namespace differentiation {
 
-// Type of combined autodiff types.
-template<typename RealType, typename... RealTypes>
-using promote = typename detail::promote_args_n<RealType,RealTypes...>::type;
-
 // Type for variables and constants.
 template<typename RealType, size_t Order, size_t... Orders>
 using autodiff_fvar = typename detail::nest_fvar<RealType,Order,Orders...>::type;
@@ -20,6 +16,10 @@ using autodiff_fvar = typename detail::nest_fvar<RealType,Order,Orders...>::type
 // Function returning a variable of differentiation.
 template<typename RealType, size_t Order, size_t... Orders>
 autodiff_fvar<RealType,Order,Orders...> make_fvar(const RealType& ca);
+
+// Type of combined autodiff types.
+template<typename RealType, typename... RealTypes>
+using promote = typename detail::promote_args_n<RealType,RealTypes...>::type;
 
 namespace detail {
 

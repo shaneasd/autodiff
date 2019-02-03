@@ -12,10 +12,6 @@
     
     namespace boost { namespace math { namespace differentiation {
     
-    // Type of combined autodiff types.
-    template<typename RealType, typename... RealTypes>
-    using promote = typename detail::promote_args_n<RealType,RealTypes...>::type;
-    
     // Type for variables and constants. 
     template<typename RealType, size_t Order, size_t... Orders>
     using autodiff_fvar = typename detail::nest_fvar<RealType,Order,Orders...>::type;
@@ -23,6 +19,10 @@
     // Function returning a variable of differentiation.
     template<typename RealType, size_t Order, size_t... Orders>
     autodiff_fvar<RealType,Order,Orders...> make_fvar(const RealType& ca);
+    
+    // Type of combined autodiff types.
+    template<typename RealType, typename... RealTypes>
+    using promote = typename detail::promote_args_n<RealType,RealTypes...>::type;
     
     namespace detail {
     
@@ -75,8 +75,8 @@ f(x_0+\varepsilon) &= f(x_0) + f'(x_0)\varepsilon + \frac{f''(x_0)}{2!}\varepsil
 
 The essential idea of autodiff is the replacement of numbers with polynomials in the evaluation of /f/. By inputting
 the first-order polynomial ['x[sub 0]+\u03b5], the resulting polynomial in ['\u03b5] contains the function's
-derivatives within the coefficients. Each coefficient is equal to a different derivative order, divided by the
-factorial of the order.
+derivatives within the coefficients. Each coefficient is equal to a derivative of its respective order, divided
+by the factorial of the order.
 
 Assume one is interested in the first /N/ derivatives of /f/ at ['x[sub 0]]. Then without any loss of precision
 to the calculation of the derivatives, all terms ['O(\u03b5[super N+1])] that include powers of ['\u03b5] greater
