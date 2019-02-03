@@ -10,8 +10,14 @@
 \usepackage{multirow}
 \usepackage{textcomp} % \textonehalf
 \usepackage{wrapfig}
+\usepackage{xcolor}
 
-\hypersetup{colorlinks=false}
+\hypersetup{%
+  colorlinks=false,% hyperlinks will be black
+  linkbordercolor=blue,% hyperlink borders will be red
+  urlbordercolor=blue,%
+  pdfborderstyle={/S/U/W 1}% border style will be underline of width 1pt
+}
 
 \begin{document}
 
@@ -108,7 +114,7 @@ f \qquad : \qquad x_0+\varepsilon \qquad \mapsto \qquad
 C++'s ability to overload operators and functions allows for the creation of a class {\tt fvar} that represents
 polynomials in $\varepsilon$. Thus the same algorithm that calculates the numeric value of $y_0=f(x_0)$ is also
 used to calculate the polynomial $\sum_{n=0}^Ny_n\varepsilon^n=f(x_0+\varepsilon)$. The derivatives are then found
-in the coefficients of the return value, multiplied by a factorial:
+from the product of the respective factorial and coefficient:
 
 \[ f^{(n)}(x_0)=n!y_n. \]
 
@@ -179,10 +185,10 @@ a multivariate polynomial in 4 independent variables, where the highest powers o
 {\tt root\_type} is always the first template parameter to {\tt autodiff\_fvar<>} followed by the maximum
 derivative order that is to be calculated for each independent variable.
 
-Note that when variables are initialized, the position of the last derivative order given in the template parameter
-pack determines which variable is taken to be independent. In other words, it determines which of the 4 different
-polynomial variables $\varepsilon_w,\varepsilon_x,\varepsilon_y,$ or $\varepsilon_z$ are to be added to
-the constant term:
+When variables are initialized with {\tt make\_var<...>()}, the position of the last derivative order given in
+the template parameter pack determines which variable is taken to be independent. In other words, it determines
+which of the 4 different polynomial variables $\varepsilon_w,\varepsilon_x,\varepsilon_y,$ or $\varepsilon_z$
+are to be added to the constant term:
 
 \begin{align*}
 \texttt{make\_fvar<cpp\_dec\_float\_100,Nw>(11)} &= 11+\varepsilon_w \\
@@ -243,8 +249,9 @@ Basic calculus courses teach that a real \href{https://en.wikipedia.org/wiki/Ana
 $f : D\rightarrow\mathbb{R}$ is one which can be expressed as a Taylor series at a point
 $x_0\in D\subseteq\mathbb{R}$:
 
-\[ f(x) = f(x_0) + f'(x_0)(x-x_0) + \frac{f''(x_0)}{2!}(x-x_0)^2 + \frac{f'''(x_0)}{3!}(x-x_0)^3 + \cdots \]
-
+\[
+f(x) = f(x_0) + f'(x_0)(x-x_0) + \frac{f''(x_0)}{2!}(x-x_0)^2 + \frac{f'''(x_0)}{3!}(x-x_0)^3 + \cdots
+\]
 One way of thinking about this form is that given the value of an analytic function $f(x_0)$ and its derivatives
 $f'(x_0), f''(x_0), f'''(x_0), ...$ evaluated at a point $x_0$, then the value of the function
 $f(x)$ can be obtained at any other point $x\in D$ using the above formula.
@@ -254,8 +261,7 @@ Let us make the substitution $x=x_0+\varepsilon$ and rewrite the above equation 
 \[
 f(x_0+\varepsilon) = f(x_0) + f'(x_0)\varepsilon + \frac{f''(x_0)}{2!}\varepsilon^2 + \frac{f'''(x_0)}{3!}\varepsilon^3 + \cdots
 \]
-
-Now consider $\varepsilon$ as **an abstract algebraic entity that never acquires a numeric value**, much like
+Now consider $\varepsilon$ as {\it an abstract algebraic entity that never acquires a numeric value}, much like
 one does in basic algebra with variables like $x$ or $y$. For example, we can still manipulate entities
 like $xy$ and $(1+2x+3x^2)$ without having to assign specific numbers to them.
 
@@ -264,7 +270,6 @@ $f(x_0+\varepsilon)$, the derivatives are obtained from the coefficients of the 
 in the resulting computation. The general coefficient for $\varepsilon^n$ is
 
 \[\frac{f^{(n)}(x_0)}{n!}.\]
-
 Thus to obtain $f^{(n)}(x_0)$, the coefficient of $\varepsilon^n$ is multiplied by $n!$.
 
 \subsubsection{Example}
@@ -280,9 +285,9 @@ f(x_0+\varepsilon) &= f(2+\varepsilon) \\
  &= \left(4+4\varepsilon+\varepsilon^2\right)^2 \\
  &= 16+32\varepsilon+24\varepsilon^2+8\varepsilon^3+\varepsilon^4.
 \end{align*}
-
 Equating the powers of $\varepsilon$ from this result with the above $\varepsilon$-taylor expansion
 yields the following equalities:
+
 \[
 f(2) = 16, \qquad
 f'(2) = 32, \qquad
@@ -291,8 +296,8 @@ f'(2) = 32, \qquad
 \frac{f^{(4)}(2)}{4!} = 1, \qquad
 \frac{f^{(5)}(2)}{5!} = 0.
 \]
-
 Multiplying both sides by the respective factorials gives
+
 \[
 f(2) = 16, \qquad
 f'(2) = 32, \qquad
@@ -301,7 +306,6 @@ f'''(2) = 48, \qquad
 f^{(4)}(2) = 24, \qquad
 f^{(5)}(2) = 0.
 \]
-
 These values can be directly confirmed by the \href{https://en.wikipedia.org/wiki/Power_rule}{power rule}
 applied to $f(x)=x^4$.
 
@@ -311,8 +315,9 @@ What was essentially done above was to take a formula/algorithm for calculating 
 and instead apply the same formula/algorithm to a polynomial $x_0+\varepsilon$. Intermediate steps operate on
 values of the form
 
-\[ {\bf x} = x_0 + x_1\varepsilon + x_2\varepsilon^2 +\cdots+ x_N\varepsilon^N \]
-
+\[
+{\bf x} = x_0 + x_1\varepsilon + x_2\varepsilon^2 +\cdots+ x_N\varepsilon^N
+\]
 and the final return value is of this polynomial form as well. In other words, the normal arithmetic operators
 $+,-,\times,\div$ applied to numbers $x$ are instead applied to polynomials $\bf x$. Through the
 overloading of C++ operators and functions, floating point data types are replaced with data types that represent
@@ -347,9 +352,9 @@ Subtraction follows the same form as addition:
 z_i &= x_i - y_i \qquad \text{for}\; i\in\{0,1,2,...,N\}.
 \end{align*}
 
-\subsubsection arithmetic-multiplication Multiplication
+\subsubsection{Multiplication}
 
-Multiplication is a bit more interesting:
+Multiplication produces higher-order terms:
 
 \begin{align*}
 {\bf z} &= {\bf x} \times {\bf y} \\
@@ -359,12 +364,11 @@ Multiplication is a bit more interesting:
  &= \sum_{i=0}^N\sum_{j=0}^ix_jy_{i-j}\varepsilon^i + O\left(\varepsilon^{N+1}\right) \\
 z_i &= \sum_{j=0}^ix_jy_{i-j} \qquad \text{for}\; i\in\{0,1,2,...,N\}.
 \end{align*}
-
-In the case of multiplication, terms involving powers of $\varepsilon$ greater than $N$, collectively
-denoted by $O\left(\varepsilon^{N+1}\right)$, are simply discarded. Fortunately, the values of $z_i$
-for $i\le N$ do not depend on any of these discarded terms, so there is no loss of precision in the final
-answer. The only information that is lost are the values of higher order derivatives, which we are not interested
-in anyway. If we were, then we would have simply chosen a larger value of $N$ to begin with.
+In the case of multiplication, terms involving powers of $\varepsilon$ greater than $N$, collectively denoted
+by $O\left(\varepsilon^{N+1}\right)$, are simply discarded. Fortunately, the values of $z_i$ for $i\le N$ do not
+depend on any of these discarded terms, so there is no loss of precision in the final answer. The only information
+that is lost are the values of higher order derivatives, which we are not interested in anyway. If we were, then
+we would have simply chosen a larger value of $N$ to begin with.
 
 \subsubsection{Division}
 
@@ -377,7 +381,6 @@ x_i &= \sum_{j=0}^iy_jz_{i-j} \\
  &= y_0z_i + \sum_{j=1}^iy_jz_{i-j} \\
 z_i &= \frac{1}{y_0}\left(x_i - \sum_{j=1}^iy_jz_{i-j}\right) \qquad \text{for}\; i\in\{0,1,2,...,N\}.
 \end{align*}
-
 In the case of division, the values for $z_i$ must be calculated sequentially, since $z_i$
 depends on the previously calculated values $z_0, z_1, ..., z_{i-1}$.
 
@@ -389,8 +392,9 @@ in order to support autodiff variable types? That is, how should they be written
 To simplify notation, for a given polynomial ${\bf x} = x_0 + x_1\varepsilon + x_2\varepsilon^2 +\cdots+
 x_N\varepsilon^N$ define
 
-\[ {\bf x}_\varepsilon = x_1\varepsilon + x_2\varepsilon^2 +\cdots+ x_N\varepsilon^N = \sum_{i=1}^Nx_i\varepsilon^i \]
-
+\[
+{\bf x}_\varepsilon = x_1\varepsilon + x_2\varepsilon^2 +\cdots+ x_N\varepsilon^N = \sum_{i=1}^Nx_i\varepsilon^i
+\]
 This allows for a concise expression of a general function $f$ of $\bf x$:
 
 \begin{align*}
@@ -398,7 +402,6 @@ f({\bf x}) &= f(x_0 + {\bf x}_\varepsilon) \\
  & = f(x_0) + f'(x_0){\bf x}_\varepsilon + \frac{f''(x_0)}{2!}{\bf x}_\varepsilon^2 + \frac{f'''(x_0)}{3!}{\bf x}_\varepsilon^3 + \cdots + \frac{f^{(N)}(x_0)}{N!}{\bf x}_\varepsilon^N + O\left(\varepsilon^{N+1}\right) \\
  & = \sum_{i=0}^N\frac{f^{(i)}(x_0)}{i!}{\bf x}_\varepsilon^i + O\left(\varepsilon^{N+1}\right)
 \end{align*}
-
 where $\varepsilon$ has been substituted with ${\bf x}_\varepsilon$ in the $\varepsilon$-taylor series
 for $f(x)$. This form gives a recipe for calculating $f({\bf x})$ in general from regular numeric calculations
 $f(x_0)$, $f'(x_0)$, $f''(x_0)$, ... and successive powers of the epsilon terms ${\bf x}_\varepsilon$.
@@ -426,8 +429,8 @@ f(x_0+\varepsilon_x,y) &= f(x_0,y)
 + O\left(\varepsilon_x^{M+1}\right) \\
 &= \sum_{i=0}^M\frac{1}{i!}\frac{\partial^i f}{\partial x^i}(x_0,y)\varepsilon_x^i + O\left(\varepsilon_x^{M+1}\right).
 \end{align*}
-
 Next, expand $f(x_0+\varepsilon_x,y)$ for $y=y_0+\varepsilon_y$:
+
 \begin{align*}
 f(x_0+\varepsilon_x,y_0+\varepsilon_y) &= \sum_{j=0}^N\frac{1}{j!}\frac{\partial^j}{\partial y^j}
     \left(\sum_{i=0}^M\frac{1}{i!}\frac{\partial^if}{\partial x^i}\right)(x_0,y_0)\varepsilon_x^i\varepsilon_y^j
@@ -440,9 +443,10 @@ Similarly to the single-variable case, for an application in which we are intere
 $x$ and $N$ derivatives in $y$, the data structure to hold this information is an $(M+1)\times(N+1)$
 array {\tt v} whose element at $(i,j)$ is
 
-\[ {\tt v[i][j]} = \frac{1}{i!j!}\frac{\partial^{i+j}f}{\partial x^i\partial y^j}(x_0,y_0)
-    \qquad \text{for}\; (i,j)\in\{0,1,2,...,M\}\times\{0,1,2,...,N\}. \]
-
+\[
+{\tt v[i][j]} = \frac{1}{i!j!}\frac{\partial^{i+j}f}{\partial x^i\partial y^j}(x_0,y_0)
+    \qquad \text{for}\; (i,j)\in\{0,1,2,...,M\}\times\{0,1,2,...,N\}.
+\]
 The generalization to additional independent variables follows the same pattern. This is made more concrete with
 C++ code in the next section.
 
@@ -456,9 +460,8 @@ specified at compile-time:
 \begin{enumerate}
 \item The numeric data type {\tt T} of $x_0$. Examples: {\tt double},
     {\tt boost::multiprecision::cpp\_dec\_float\_100}, etc.
-\item The **maximum** derivative order $M$ that is to be calculated with respect to $x$.
+\item The maximum derivative order $M$ that is to be calculated with respect to $x$.
 \end{enumerate}
-
 Note that both of these requirements are entirely analogous to declaring and using a {\tt std::array<T,N>}. {\tt T}
 and {\tt N} must be set as compile-time, but which elements in the array are accessed can be determined at run-time,
 just as the choice of what derivatives to query in autodiff can be made during run-time.
@@ -466,37 +469,37 @@ just as the choice of what derivatives to query in autodiff can be made during r
 To declare and initialize $x$:
 
 \begin{verbatim}
-boost::math::differentiation::autodiff_fvar<T,M> x(x0);
+    using namespace boost::math::differentiation;
+    autodiff_fvar<T,M> x = make_fvar<T,M>(x0);
 \end{verbatim}
-
 where {\tt x0} is a run-time value of type {\tt T}. Assuming {\tt 0 < M}, this represents the polynomial $x_0 +
-\varepsilon$.  Internally, the member variable of type {\tt std::array<T,M>} is {\tt v = \{ x0, 1, 0, 0, ... \}},
+\varepsilon$. Internally, the member variable of type {\tt std::array<T,M>} is {\tt v = \{ x0, 1, 0, 0, ... \}},
 consistent with the above mathematical treatise.
 
 To find the derivatives $f^{(n)}(x_0)$ for $0\le n\le M$ of a function
 $f : \mathbb{R}\rightarrow\mathbb{R}$, the function can be represented as a template
 
 \begin{verbatim}
-template<typename T>
-T f(T x);
+    template<typename T>
+    T f(T x);
 \end{verbatim}
 
 Using a generic type {\tt T} allows for {\tt x} to be of a regular type such as {\tt double}, but also allows for\\
 {\tt boost::math::differentiation::autodiff\_fvar<>} types.
 
 Internal calls to mathematical functions must allow for
-\href{https://en.cppreference.com/w/cpp/language/adl}{argument-dependent lookup} (ADL). Many standard library
-functions are overloaded in the {\tt boost::math::differentiation::autodiff} namespace. For example, instead
-of calling {\tt std::cos(x)} from within {\tt f}, include the line {\tt using std::cos;} and call {\tt cos(x)}
-without a namespace prefix.
+\href{https://en.cppreference.com/w/cpp/language/adl}{argument-dependent lookup} (ADL). Many standard library functions
+are overloaded in the {\tt boost::math::differentiation} namespace. For example, instead of calling {\tt std::cos(x)}
+from within {\tt f}, include the line {\tt using std::cos;} and call {\tt cos(x)} without a namespace prefix.
 
 Calling $f$ and retrieving the calculated value and derivatives:
 
 \begin{verbatim}
-boost::math::differentiation::autodiff\_fvar<T,M> x(x0);
-boost::math::differentiation::autodiff\_fvar<T,M> y = f(x);
-for (int n=0 ; n<=M ; ++n)
-    std::cout << "y.derivative("<<n<<") == " << y.derivative(n) << std::endl;
+    using namespace boost::math::differentiation;
+    autodiff_fvar<T,M> x = make_fvar<T,M>(x0);
+    autodiff_fvar<T,M> y = f(x);
+    for (int n=0 ; n<=M ; ++n)
+        std::cout << "y.derivative("<<n<<") == " << y.derivative(n) << std::endl;
 \end{verbatim}
 
 {\tt y.derivative(0)} returns the undifferentiated value $f(x_0)$, and {\tt y.derivative(n)} returns $f^{(n)}(x_0)$.
@@ -511,40 +514,39 @@ are equal:
 \subsection{Multiple Variables}
 
 Independent variables are represented in autodiff as independent dimensions within a multi-dimensional array.
-This is perhaps best illustrated with examples.
+This is perhaps best illustrated with examples. The {\tt namespace boost::math::differentiation} is assumed.
 
 The following instantiates a variable of $x=13$ with up to 3 orders of derivatives:
-\begin{verbatim}
-boost::math::differentiation::autodiff_fvar<double,3> x(13);
-\end{verbatim}
 
-This instantiates *an independent* value of $y=14$ with up to 4 orders of derivatives:
 \begin{verbatim}
-boost::math::differentiation::autodiff_fvar<double,0,4> y(14);
+    autodiff_fvar<double,3> x = make_fvar<double,3>(13);
 \end{verbatim}
+This instantiates {\bf an independent} value of $y=14$ with up to 4 orders of derivatives:
 
-Combining them together *promotes* their data type automatically to the smallest multidimensional array that
+\begin{verbatim}
+    autodiff_fvar<double,0,4> y = make_fvar<double,0,4>(14);
+\end{verbatim}
+Combining them together {\bf promotes} their data type automatically to the smallest multidimensional array that
 accommodates both.
-\begin{verbatim}
-// z is promoted to boost::math::differentiation::autodiff_fvar<double,3,4>
-auto z = 10*x*x + 50*x*y + 100*y*y;
-\end{verbatim}
 
+\begin{verbatim}
+    // z is promoted to autodiff_fvar<double,3,4>
+    auto z = 10*x*x + 50*x*y + 100*y*y;
+\end{verbatim}
 The object {\tt z} holds a 2-dimensional array, thus {\tt derivative(...)} is a 2-parameter method:
 
 \[
 {\tt z.derivative(i,j)} = \frac{\partial^{i+j}f}{\partial x^i\partial y^j}(13,14)
     \qquad \text{for}\; (i,j)\in\{0,1,2,3\}\times\{0,1,2,3,4\}.
 \]
-
 A few values of the result can be confirmed through inspection:
-\begin{verbatim}
-z.derivative(2,0) == 20
-z.derivative(1,1) == 50
-z.derivative(0,2) == 200
-\end{verbatim}
 
-Note how the position of the parameters in {\tt derivative(..)} match how {\tt x} and {\tt y} were declared.
+\begin{verbatim}
+    z.derivative(2,0) == 20
+    z.derivative(1,1) == 50
+    z.derivative(0,2) == 200
+\end{verbatim}
+Note how the position of the parameters in {\tt derivative(...)} match how {\tt x} and {\tt y} were declared.
 This will be clarified next.
 
 \subsubsection{Two Rules of Variable Initialization}
@@ -572,33 +574,32 @@ the numerical values at which the function $f$ and its derivatives are evaluated
 
 In code:
 \begin{verbatim}
-using namespace boost::math::differentiation;
+    using namespace boost::math::differentiation;
 
-using var = autodiff_fvar<double,Nx,Ny,Nz>; // Nx, Ny, Nz are constexpr size_t.
+    using var = autodiff_fvar<double,Nx,Ny,Nz>; // Nx, Ny, Nz are constexpr size_t.
 
-var x = autodiff_fvar<double,Nx>(x0);       // x0 is of type double
-var y = autodiff_fvar<double,Nx,Ny>(y0);    // y0 is of type double
-var z = autodiff_fvar<double,Nx,Ny,Nz>(z0); // z0 is of type double
+    var x = make_fvar<double,Nx>(x0);       // x0 is of type double
+    var y = make_fvar<double,Nx,Ny>(y0);    // y0 is of type double
+    var z = make_fvar<double,Nx,Ny,Nz>(z0); // z0 is of type double
 
-var w = f(x,y,z);
+    var w = f(x,y,z);
 
-for (size_t nx=0 ; nx<=Nx ; ++nx)
-    for (size_t ny=0 ; ny<=Ny ; ++ny)
-        for (size_t nz=0 ; nz<=Nz ; ++nz)
-            std::cout << "w.derivative("<<nx<<','<<ny<<','<<nz<<") == "
-                << w.derivative(nx,ny,nz) << std::endl;
+    for (size_t nx=0 ; nx<=Nx ; ++nx)
+        for (size_t ny=0 ; ny<=Ny ; ++ny)
+            for (size_t nz=0 ; nz<=Nz ; ++nz)
+                std::cout << "w.derivative("<<nx<<','<<ny<<','<<nz<<") == "
+                    << w.derivative(nx,ny,nz) << std::endl;
 \end{verbatim}
-
 Note how {\tt x}, {\tt y}, and {\tt z} are initialized: the last template parameter determines which variable
 $x, y,$ or $z$ a derivative is taken with respect to. In terms of the $\varepsilon$-polynomials
 above, this determines whether to add $\varepsilon_x, \varepsilon_y,$ or $\varepsilon_z$ to
 $x_0, y_0,$ or $z_0$, respectively.
 
 In contrast, the following initialization of {\tt x} would be INCORRECT:
-\begin{verbatim}
-var x = autodiff_fvar<T,Nx,0>(x0); // WRONG
-\end{verbatim}
 
+\begin{verbatim}
+    var x = make_fvar<T,Nx,0>(x0); // WRONG
+\end{verbatim}
 Mathematically, this represents $x_0+\varepsilon_y$, since the last template parameter corresponds to the
 $y$ variable, and thus the resulting value will be invalid.
 
@@ -606,27 +607,44 @@ $y$ variable, and thus the resulting value will be invalid.
 
 The previous example can be optimized to save some unnecessary computation, by declaring smaller arrays,
 and relying on autodiff's automatic type-promotion:
+
 \begin{verbatim}
-using namespace boost::math::differentiation;
+    using namespace boost::math::differentiation;
 
-autodiff_fvar<double,Nx> x(x0);
-autodiff_fvar<double,0,Ny> y(y0);
-autodiff_fvar<double,0,0,Nz> z(z0);
+    autodiff_fvar<double,Nx> x = make_fvar<double,Nx>(x0);
+    autodiff_fvar<double,0,Ny> y = make_fvar<double,0,Ny>(y0);
+    autodiff_fvar<double,0,0,Nz> z = make_fvar<double,0,0,Nz>(z0);
 
-autodiff_fvar<double,Nx,Ny,Nz> w = f(x,y,z);
+    autodiff_fvar<double,Nx,Ny,Nz> w = f(x,y,z);
 
-for (size_t nx=0 ; nx<=Nx ; ++nx)
-    for (size_t ny=0 ; ny<=Ny ; ++ny)
-        for (size_t nz=0 ; nz<=Nz ; ++nz)
-            std::cout << "w.derivative("<<nx<<','<<ny<<','<<nz<<") == "
-                << w.derivative(nx,ny,nz) << std::endl;
+    for (size_t nx=0 ; nx<=Nx ; ++nx)
+        for (size_t ny=0 ; ny<=Ny ; ++ny)
+            for (size_t nz=0 ; nz<=Nz ; ++nz)
+                std::cout << "w.derivative("<<nx<<','<<ny<<','<<nz<<") == "
+                    << w.derivative(nx,ny,nz) << std::endl;
 \end{verbatim}
-
 For example, if one of the first steps in the computation of $f$ was {\tt z*z}, then a significantly less number of
 multiplications and additions may occur if {\tt z} is declared as {\tt autodiff\_fvar<double,0,0,Nz>} as opposed to \\
 {\tt autodiff\_fvar<double,Nx,Ny,Nz>}. There is no loss of precision with the former, since the extra dimensions
 represent 0 values. Once {\tt z} is combined with {\tt x} and {\tt y} during the computation, the types will be
 promoted as necessary.  This is the recommended way to initialize variables in autodiff.
+
+\section{Function Requirements}
+
+TODO
+
+When writing a template function, the return value must be locally analytic in the variables of differentiation.
+
+\begin{itemize}
+\item Any place where a constant is returned will have 0 derivatives. For example, if an implemention of the
+{\tt fourth\_power()} function given above has as its first statement {\tt if (x == 2) return 16; }
+then no derivatives will be available for $x=2$; instead {\tt y.derivative(i) == 0} for all {\tt i>0}. Each
+value within a connected subset of real numbers must be calculated in terms of an analytic function. The extent
+to which it is not shall be mirrored in the innaccuracy of the derivatives.
+\item Avoid intermediate singularities in both the calculated value and its derivatives. For example, $y=\sqrt{x}$
+followed by $z=y^2$ may appear to be safe for $x\ge0$ however when $x=0$ all non-zero derivatives of $z$ will be
+NaN. This is due to the infinite slope of $y=\sqrt{x}$ at $x=0$.
+\end{itemize}
 
 \section{Acknowledgments}
 
@@ -640,5 +658,9 @@ promoted as necessary.  This is the recommended way to initialize variables in a
 % Distributed under the Boost Software License, Version 1.0.<br/>
 %     (See accompanying file LICENSE_1_0.txt or copy at<br/>
 %           https://www.boost.org/LICENSE_1_0.txt)
+
+\begin{thebibliography}{1}
+\bibitem{ad} https://en.wikipedia.org/wiki/Automatic\_differentiation
+\end{thebibliography}
 
 \end{document}
