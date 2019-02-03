@@ -277,6 +277,7 @@ BOOST_AUTO_TEST_CASE(subtraction_assignment)
     boost::fusion::for_each(multiprecision_float_types, subtraction_assignment_test());
 }
 
+// Try explicit bracing based on feedback. Doesn't add very much except 26 extra lines.
 struct multiplication_assignment_test
 {
   template<typename T>
@@ -290,35 +291,61 @@ struct multiplication_assignment_test
     auto x = make_fvar<T,m>(cx);
     product *= x;
     for (int i=0 ; i<=m ; ++i)
+    {
         for (int j=0 ; j<=n ; ++j)
+        {
             if (i==0 && j==0)
+            {
                 BOOST_REQUIRE(product.derivative(i,j) == cx);
+            }
             else if (i==1 && j==0)
+            {
                 BOOST_REQUIRE(product.derivative(i,j) == 1.0);
+            }
             else
+            {
                 BOOST_REQUIRE(product.derivative(i,j) == 0.0);
+            }
+        }
+    }
     // Arithmetic constant
     constexpr float cy = 11.0;
     product = 1;
     product *= cy;
     for (int i=0 ; i<=m ; ++i)
+    {
         for (int j=0 ; j<=n ; ++j)
+        {
             if (i==0 && j==0)
+            {
                 BOOST_REQUIRE(product.derivative(i,j) == cy);
+            }
             else
+            {
                 BOOST_REQUIRE(product.derivative(i,j) == 0.0);
+            }
+        }
+    }
     // 0 * inf = nan
     x = make_fvar<T,m>(0.0);
     x *= std::numeric_limits<T>::infinity();
     //std::cout << "x = " << x << std::endl;
     for (int i=0 ; i<=m ; ++i)
+    {
         if (i==0)
+        {
             BOOST_REQUIRE(boost::math::isnan(static_cast<T>(x))); // Correct
             //BOOST_REQUIRE(x.derivative(i) == 0.0); // Wrong. See multiply_assign_by_root_type().
+        }
         else if (i==1)
+        {
             BOOST_REQUIRE(boost::math::isinf(x.derivative(i)));
+        }
         else
+        {
             BOOST_REQUIRE(x.derivative(i) == 0.0);
+        }
+    }
   }
 };
 
